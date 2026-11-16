@@ -1,0 +1,44 @@
+{
+  "name": "create-averoa",
+  "version": "1.0.0",
+  "description": "Create a new AveroaJS application: npm create averoa@latest my-app",
+  "type": "module",
+  "bin": {
+    "create-averoa": "bin/create-averoa.js"
+  },
+  "files": [
+    "bin",
+    "src",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "test:network": "node --test test/network/latest.test.js"
+  },
+  "keywords": [
+    "averoa",
+    "averoajs",
+    "create",
+    "create-app",
+    "scaffold",
+    "boilerplate",
+    "express",
+    "cli"
+  ],
+  "author": {
+    "name": "Budi Hermawan",
+    "email": "budianonym@gmail.com"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/budiherma1/create-averoa.git"
+  },
+  "bugs": {
+    "url": "https://github.com/budiherma1/create-averoa/issues"
+  },
+  "homepage": "https://github.com/budiherma1/create-averoa#readme"
+}
