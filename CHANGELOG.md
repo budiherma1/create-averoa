@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.1.0
+
+### Added
+
+- **Starters.** `--starter <name>` (or the new prompt, on a terminal) creates the app from one of the boilerplate's
+  starters instead of the full boilerplate: `minimal` (authentication and users, no examples) or `dashboard` (admin
+  pages with a session login). Starters come from the downloaded release's `starters/` folder (AveroaJS 2.5.0 and
+  later), are applied before the usual preparation, and the folder itself is not copied into the app. An unknown
+  starter lists the available ones; nothing is written.
+- The project README names the starter.
+
+### Changed
+
+- The offline fallback version is `v2.5.0` (was `v2.2.1`).
+
 ## 1.0.0
 
 First release.

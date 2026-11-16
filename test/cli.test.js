@@ -293,4 +293,52 @@ describe('create-averoa', () => {
     assert.match(fs.readFileSync(path.join(app, '.env'), 'utf8'), /^DB_CLIENT=mysql2$/m);
     assert.equal(fs.existsSync(path.join(app, '.git')), false);
   });
+
+  /** The fixture template with a `slim` starter. */
+  function starterTemplate(t) {
+    const root = path.join(tempDir(t), 'template');
+    fs.cpSync(FIXTURE, root, { recursive: true });
+    fs.mkdirSync(path.join(root, 'starters/slim/files/routes'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'starters/slim/starter.json'), JSON.stringify({ description: 'No examples', remove: ['app/index.js'] }));
+    fs.writeFileSync(path.join(root, 'starters/slim/files/routes/api.js'), '// slim\n');
+    return root;
+  }
+
+  it('applies --starter and leaves no starters folder in the app', async (t) => {
+    const cwd = tempDir(t);
+    const io = testIo(cwd);
+    const code = await run(['slim-app', '--template', starterTemplate(t), '--starter', 'slim', '--no-install', '--no-git'], io);
+    assert.equal(code, 0, io.stderr.text());
+    const app = path.join(cwd, 'slim-app');
+    assert.equal(fs.readFileSync(path.join(app, 'routes/api.js'), 'utf8'), '// slim\n');
+    assert.equal(fs.existsSync(path.join(app, 'app/index.js')), false);
+    assert.equal(fs.existsSync(path.join(app, 'starters')), false);
+    assert.match(io.stdout.text(), /Starter: slim \(1 removed, 1 added or replaced\)/);
+  });
+
+  it('names the available starters for an unknown --starter, and writes nothing', async (t) => {
+    const cwd = tempDir(t);
+    const io = testIo(cwd);
+    assert.equal(await run(['x-app', '--template', starterTemplate(t), '--starter', 'nope', '--no-install', '--no-git'], io), 1);
+    assert.match(io.stderr.text(), /Unknown starter "nope"\. This AveroaJS version has: slim\./);
+    assert.equal(fs.existsSync(path.join(cwd, 'x-app')), false);
+
+    const old = testIo(cwd);
+    assert.equal(await run(['y-app', ...offline, '--starter', 'slim'], old), 1);
+    assert.match(old.stderr.text(), /has no starters\. Use a newer --ref, or leave out --starter\./);
+  });
+
+  it('asks for a starter on a terminal when the template has some', async (t) => {
+    const cwd = tempDir(t);
+    const answers = [
+      [/Choose 1-2 \(1\): $/, '2'],
+    ].map(([question, answer]) => [question, `${answer}\r`]);
+    const io = terminal(cwd, answers);
+    const code = await run(['asked', '--template', starterTemplate(t), '--db', 'sqlite', '--no-install', '--no-git'], io);
+    assert.equal(code, 0, io.stderr.text());
+    assert.equal(answers.length, 0, 'the starter was asked');
+    assert.match(io.stdout.text(), /Full boilerplate \(with the example models, routes and views\)/);
+    assert.match(io.stdout.text(), /slim \(No examples\)/);
+    assert.equal(fs.readFileSync(path.join(cwd, 'asked', 'routes/api.js'), 'utf8'), '// slim\n');
+  });
 });

@@ -12,6 +12,7 @@ import { databaseName } from './name.js';
  *   the user's own project (package.json gets "private": true instead)
  * - .github/, CONTRIBUTING.md, CODE_OF_CONDUCT.md, SECURITY.md, FUNDING.yml:
  *   repository CI and community files
+ * - starters/: the starters (src/starter.js); the chosen one is applied first
  * README.md is replaced by a short project README that links to the full
  * AveroaJS documentation for the version used.
  */
@@ -24,6 +25,7 @@ export const REPO_ONLY_FILES = [
   'CODE_OF_CONDUCT.md',
   'SECURITY.md',
   'FUNDING.yml',
+  'starters',
 ];
 export const REPO_ONLY_SCRIPTS = ['link:local'];
 // package.json fields describing the boilerplate repository, not the new app
@@ -186,10 +188,12 @@ export function runCommand(pm, script) {
   return `${pm} run ${script}`;
 }
 
-export function projectReadme({ name, db, packageManager: pm, ref, scripts }) {
+export function projectReadme({
+  name, db, packageManager: pm, ref, scripts, starter = null,
+}) {
   const docsRef = ref ?? 'master';
   const docs = `https://github.com/budiherma1/averoajs/blob/${docsRef}/README.md`;
-  const version = ref ? ` ${ref}` : '';
+  const version = `${ref ? ` ${ref}` : ''}${starter ? ` (starter: ${starter})` : ''}`;
   const dbNote = db === 'sqlite'
     ? 'The database is the SQLite file `database/dev.sqlite` (`DB_CLIENT=better-sqlite3` in `.env`), so no database server is needed.'
     : `The database is ${DB_LABELS[db]} (\`DB_CLIENT=${dbEnv(db, name).DB_CLIENT}\` in \`.env\`). Create the database \`${dbEnv(db, name).DB_NAME}\` and fill in \`DB_USER\` and \`DB_PASS\` in \`.env\` before running the migrations; Knex does not create the database itself.`;
@@ -250,10 +254,11 @@ and queues, uploads, migrations, the \`node averoa make:*\` generators and the p
  * Turns an extracted boilerplate (`root`) into a new application.
  *
  * @param {string} root
- * @param {{ name: string, db: string, packageManager: string, ref?: string | null, secret?: () => string }} options
+ * @param {{ name: string, db: string, packageManager: string, ref?: string | null, starter?: string | null,
+ *   secret?: () => string }} options
  */
 export function postProcess(root, {
-  name, db, packageManager = 'npm', ref = null, secret = generateSecret,
+  name, db, packageManager = 'npm', ref = null, starter = null, secret = generateSecret,
 }) {
   if (!DRIVERS[db]) throw new Error(`unknown database preset "${db}"`);
   const { removedScripts, driver, scripts } = updatePackageJson(root, { name, db });
@@ -261,7 +266,7 @@ export function postProcess(root, {
   const removedFiles = removeRepoFiles(root);
   const env = writeEnv(root, { name, db, secret });
   fs.writeFileSync(path.join(root, 'README.md'), projectReadme({
-    name, db, packageManager, ref, scripts,
+    name, db, packageManager, ref, scripts, starter,
   }));
   return {
     removedFiles, removedScripts, removedLockfiles, driver, envKeys: env.keys,

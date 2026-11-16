@@ -18,6 +18,7 @@ preset, dependencies and a first git commit.
 - [Quick start](#quick-start)
 - [Usage](#usage)
 - [Options](#options)
+- [Starters](#starters)
 - [What it does](#what-it-does)
 - [Database presets](#database-presets)
 - [Choosing the boilerplate version](#choosing-the-boilerplate-version)
@@ -40,10 +41,11 @@ Open <http://localhost:8888>, or call the API:
 
 ```bash
 curl http://localhost:8888/api
-# {"name":"Averoa","version":"2.2.1"}
+# {"name":"Averoa"}
 ```
 
-The default preset uses SQLite, so no database server is needed. The seeders create the demo user
+The default preset uses SQLite, so no database server is needed. To start from a smaller app or from admin pages,
+pick a [starter](#starters): `npm create averoa@latest my-app -- --starter dashboard`. The seeders create the demo user
 `demo@averoa.test` with the password `password`; log in with `POST /api/auth/login`.
 
 ## Usage
@@ -89,6 +91,7 @@ without a terminal.
 | --- | --- | --- |
 | `[project-directory]` | `averoa-app` | Where to create the application, relative to the current directory. `.` is the current directory. |
 | `--db <sqlite\|mysql\|postgres>` | `sqlite` | Database preset written to `.env` (see [Database presets](#database-presets)). `better-sqlite3`, `mysql2`, `mariadb`, `pg` and `postgresql` are accepted as aliases. |
+| `--starter <name>` | full boilerplate | Start from one of the boilerplate's [starters](#starters), such as `minimal` or `dashboard`. Asked on a terminal when not given (AveroaJS 2.5.0 and later). |
 | `--name <package-name>` | directory name | `name` in `package.json`, validated against the npm naming rules. Scoped names (`@acme/api`) are allowed. |
 | `--ref <tag\|branch\|sha>` | latest `v*` tag | The averoajs version to download, for example `v2.2.1`, `master` or a commit SHA. |
 | `--template <dir\|file\|url>` | | Use a local directory, a `.tar.gz` / `.tgz` file or a tarball URL instead of GitHub. Cannot be combined with `--ref`. |
@@ -104,12 +107,35 @@ The exit code is `0` on success, `1` on an error (including a failed dependency 
 were written) and `130` when you cancel a prompt with Ctrl+C. Cancelling never leaves files behind: every question is
 asked before anything is written.
 
+## Starters
+
+A starter is a variant of the boilerplate kept in its `starters/` folder, so every AveroaJS release brings starters
+that match it. Pass one with `--starter`, or choose it at the prompt; without one you get the full boilerplate.
+
+| Starter | What you get |
+| --- | --- |
+| (none) | The full boilerplate: authentication, users, and the example Teacher / Rooms models, routes, views, policy and tests |
+| `minimal` | Authentication (JWT API, registration, refresh tokens, password reset, email verification), users, jobs, scheduler, mail, uploads and every setting, without the examples |
+| `dashboard` | `minimal` plus server-rendered admin pages: a session login at `/login`, an overview with user numbers, a searchable users list for admins, profile and password pages, and their tests |
+
+```bash
+npm create averoa@latest my-admin -- --starter dashboard
+cd my-admin && npm run migrate:up && npm run seed:run && npm run dev
+# open http://localhost:8888 and sign in as demo@averoa.test / password
+```
+
+The starters available depend on the version you download: `--ref v2.4.0` and older have none, and an unknown name
+lists the ones that exist. How starters are built (`starter.json`, `files/`, `extends`) is described in the
+boilerplate's [`starters/README.md`](https://github.com/budiherma1/averoajs/blob/master/starters/README.md).
+
 ## What it does
 
 1. **Downloads the boilerplate.** It looks up the latest `vX.Y.Z` tag of
    [budiherma1/averoajs](https://github.com/budiherma1/averoajs) with the GitHub API and streams the tag's archive from
    `codeload.github.com` into the system `tar`. Pre-release tags (`v3.0.0-beta.1`) are ignored. The archive has no
    `.git` folder, so the new project starts with no history of the boilerplate.
+   With `--starter`, the starter is applied next (files removed, added and replaced, `package.json` and
+   `.env.example` updated); the steps below then run on the result.
 2. **Prepares `package.json`.** `name` becomes the package name, `version` becomes `0.1.0`, and `"private": true` is
    added so the application cannot be published to npm by accident. The fields that describe the boilerplate
    repository (`description`, `author`, `license`, `repository`, `bugs`, `homepage`, `keywords`, `funding`) and the
@@ -123,6 +149,7 @@ asked before anything is written.
    | `CHANGELOG.md` | the boilerplate's release history, not your application's |
    | `LICENSE` | the boilerplate's MIT notice; your application is your own project, licensed as you choose |
    | `.github/`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `SECURITY.md`, `FUNDING.yml` | repository CI and community files, when present |
+   | `starters/` | the starters; the one you chose is already applied |
    | `README.md` | replaced by a short README for your project, with the scripts and a link to the AveroaJS guide for the exact version used |
 
    Everything else is kept: `app/`, `config/`, `database/`, `routes/`, `resources/`, `public/`, `storages/`, `tests/`,

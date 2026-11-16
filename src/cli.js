@@ -11,6 +11,7 @@ import {
   detectPackageManager, initGitRepository, installDependencies, satisfiesRange,
 } from './system.js';
 import { obtainTemplate } from './template.js';
+import { applyStarter, listStarters } from './starter.js';
 
 const { version: VERSION } = JSON.parse(fs.readFileSync(new URL('../package.json', import.meta.url), 'utf8'));
 const DEFAULT_DIR = 'averoa-app';
@@ -151,7 +152,6 @@ async function create(options, ctx) {
   const pm = options.pm ?? detectPackageManager(env.npm_config_user_agent) ?? 'npm';
   const install = options.install ?? (prompt ? await prompt.confirm(`Install dependencies with ${pm}?`, true) : true);
   const gitInit = options.git ?? (prompt ? await prompt.confirm('Initialise a git repository?', true) : true);
-  prompt?.close();
 
   log(`\nCreating ${c.bold(name)} in ${c.cyan(target)}`);
 
@@ -164,7 +164,31 @@ async function create(options, ctx) {
     ref = obtained.ref;
     log(`  Template: ${ref ? `averoajs ${ref}` : obtained.source}`);
 
-    const result = postProcess(obtained.root, { name, db, packageManager: pm, ref });
+    const starters = listStarters(obtained.root);
+    let { starter } = options;
+    if (starter === undefined && prompt && starters.length > 0) {
+      const choice = await prompt.select('Starter', [
+        { value: '', label: 'Full boilerplate (with the example models, routes and views)' },
+        ...starters.map((s) => ({ value: s.name, label: `${s.name}${s.description ? ` (${s.description})` : ''}` })),
+      ]);
+      starter = choice || undefined;
+    }
+    prompt?.close();
+    if (starter) {
+      const applied = applyStarter(obtained.root, starter);
+      if (!applied) {
+        const available = starters.map((s) => s.name).join(', ');
+        throw new UsageError(available
+          ? `Unknown starter "${starter}". This AveroaJS version has: ${available}.`
+          : `This AveroaJS version${ref ? ` (${ref})` : ''} has no starters. Use a newer --ref, or leave out --starter.`);
+      }
+      log(`  Starter: ${applied.chain.join(' + ')} (${applied.removed.length} removed, ${applied.written.length} added or replaced)`);
+      if (applied.packages.length) log(`  Added ${applied.packages.join(', ')} to package.json`);
+    }
+
+    const result = postProcess(obtained.root, {
+      name, db, packageManager: pm, ref, starter: starter ?? null,
+    });
 
     fs.mkdirSync(target, { recursive: true });
     const envFile = path.join(target, '.env');
@@ -184,6 +208,7 @@ async function create(options, ctx) {
     const removed = [...result.removedFiles, ...result.removedLockfiles, ...result.removedScripts.map((s) => `npm script ${s}`)];
     if (removed.length) log(`  Removed repository-only files: ${removed.join(', ')}`);
   } finally {
+    prompt?.close();
     fs.rmSync(staging, { recursive: true, force: true });
   }
 

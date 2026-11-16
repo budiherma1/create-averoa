@@ -35,6 +35,7 @@ const VALUE_OPTIONS = {
   '--template': 'template',
   '--name': 'name',
   '--pm': 'pm',
+  '--starter': 'starter',
 };
 
 const FLAG_OPTIONS = {
@@ -67,7 +68,7 @@ export function validateRef(ref) {
 
 /**
  * @param {string[]} argv arguments after the script name
- * @returns {{dir?: string, name?: string, db?: string, ref?: string, template?: string, pm?: string,
+ * @returns {{dir?: string, name?: string, db?: string, ref?: string, template?: string, pm?: string, starter?: string,
  *   install?: boolean, git?: boolean, force: boolean, yes: boolean, help: boolean, version: boolean}}
  */
 export function parseArgs(argv) {
@@ -78,6 +79,7 @@ export function parseArgs(argv) {
     ref: undefined,
     template: undefined,
     pm: undefined,
+    starter: undefined,
     install: undefined,
     git: undefined,
     force: false,
@@ -136,6 +138,9 @@ export function parseArgs(argv) {
   if (options.pm !== undefined && !PACKAGE_MANAGERS.includes(options.pm)) {
     throw new UsageError(`Unknown --pm "${options.pm}". Use one of: ${PACKAGE_MANAGERS.join(', ')}.`);
   }
+  if (options.starter !== undefined && !/^[a-z][a-z0-9-]{0,49}$/.test(options.starter)) {
+    throw new UsageError(`Invalid --starter "${options.starter}". Use a starter name such as minimal or dashboard.`);
+  }
   if (options.ref !== undefined) validateRef(options.ref);
   if (options.ref !== undefined && options.template !== undefined) {
     throw new UsageError('Use either --ref or --template, not both.');
@@ -150,10 +155,14 @@ Creates a new AveroaJS application from the averoajs boilerplate.
 
   npm create averoa@latest my-app
   npm create averoa@latest my-app -- --db mysql --no-git
+  npm create averoa@latest my-app -- --starter dashboard
   npx create-averoa my-app --yes
 
 Options:
   --db <sqlite|mysql|postgres>  Database preset written to .env (default: sqlite)
+  --starter <name>              Start from a starter of the boilerplate: minimal (auth and
+                                users, no examples), dashboard (admin pages with a session
+                                login), ... (default: the full boilerplate with its examples)
   --name <package-name>         package.json name (default: the directory name)
   --ref <tag|branch|sha>        Boilerplate version to download (default: latest v* tag)
   --template <dir|file|url>     Use a local directory, a .tar.gz file or a tarball URL

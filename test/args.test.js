@@ -13,6 +13,7 @@ describe('parseArgs', () => {
       ref: undefined,
       template: undefined,
       pm: undefined,
+      starter: undefined,
       install: undefined,
       git: undefined,
       force: false,
@@ -20,6 +21,14 @@ describe('parseArgs', () => {
       help: false,
       version: false,
     });
+  });
+
+  it('reads --starter and rejects names that are not starter names', () => {
+    assert.equal(parseArgs(['app', '--starter', 'dashboard']).starter, 'dashboard');
+    assert.equal(parseArgs(['--starter=minimal']).starter, 'minimal');
+    for (const bad of ['../x', 'Dashboard', 'a/b', '-x']) {
+      assert.throws(() => parseArgs(['--starter', bad]), /Invalid --starter|needs a value/);
+    }
   });
 
   it('reads the project directory and every option', () => {
