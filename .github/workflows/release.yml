@@ -1,0 +1,78 @@
+name: Release
+
+# Publishes to npm when a version tag vX.Y.Z (matching package.json) is pushed.
+# Never runs on branch pushes or pull requests.
+#
+# Authentication is npm trusted publishing (OIDC): no NPM_TOKEN secret. The package's
+# settings on npmjs.com name this repository and this workflow file (release.yml) as
+# its trusted publisher; npm then accepts a short-lived token from this job only, and
+# adds a provenance statement (the commit and workflow that built the package).
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Tag matches package.json
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Tagged commit is on main
+        run: |
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::$GITHUB_REF_NAME points at a commit that is not on main; only main is released"
+            exit 1
+          fi
+      - name: Compare tag and version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "v$version" ]; then
+            echo "::error::Tag $TAG does not match package.json version $version (expected v$version)"
+            exit 1
+          fi
+          echo "Releasing $version"
+
+  ci:
+    name: CI
+    needs: verify
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    name: Publish to npm
+    needs: [verify, ci]
+    if: github.repository_owner == 'budiherma1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      id-token: write # the OIDC token for npm trusted publishing (and provenance)
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24.x
+          registry-url: https://registry.npmjs.org
+      - name: npm supports trusted publishing
+        run: |
+          npm_version="$(npm --version)"
+          if ! node -e "const [a, b, c] = process.argv[1].split('.').map(Number); process.exit(a > 11 || (a === 11 && (b > 5 || (b === 5 && c >= 1))) ? 0 : 1)" "$npm_version"; then
+            echo "::error::npm $npm_version cannot use trusted publishing (needs 11.5.1 or later)"
+            exit 1
+          fi
+      - name: Publish
+        # a prerelease version (1.2.3-beta.1) goes to the "next" dist-tag, not "latest"
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          case "$version" in *-*) dist_tag=next ;; *) dist_tag=latest ;; esac
+          npm publish --provenance --access public --tag "$dist_tag"

@@ -272,6 +272,9 @@ for the git tests, `git`. The package has no runtime dependencies: Node.js built
 `node:crypto`, `node:child_process`) plus the system `tar`, which avoids shipping an archive library for a single
 extraction.
 
+`.github/workflows/release.yml` publishes to npm when a `vX.Y.Z` tag matching `package.json` is pushed: only for
+commits on `main`, after the tests, with npm trusted publishing (no token secret) and a provenance statement.
+
 ## License
 
 [MIT](LICENSE) © 2026 Budi Hermawan ([@budiherma1](https://github.com/budiherma1))
