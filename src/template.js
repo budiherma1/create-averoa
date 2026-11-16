@@ -5,7 +5,7 @@ import { Readable } from 'node:stream';
 
 export const REPO = 'budiherma1/averoajs';
 /** Used when the latest tag cannot be looked up (offline API, rate limit). */
-export const FALLBACK_REF = 'v2.1.0';
+export const FALLBACK_REF = 'v2.2.1';
 const API_URL = 'https://api.github.com';
 const CODELOAD_URL = 'https://codeload.github.com';
 const DOWNLOAD_TIMEOUT = 120_000;

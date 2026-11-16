@@ -60,7 +60,7 @@ export function normalizeDb(value) {
 
 export function validateRef(ref) {
   if (!REF_PATTERN.test(ref) || ref.includes('..') || ref.startsWith('/') || ref.startsWith('-')) {
-    throw new UsageError(`Invalid --ref "${ref}". Pass a tag (v2.1.0), a branch or a commit SHA.`);
+    throw new UsageError(`Invalid --ref "${ref}". Pass a tag (v2.2.1), a branch or a commit SHA.`);
   }
   return ref;
 }

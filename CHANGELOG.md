@@ -7,7 +7,7 @@ First release.
 - `npm create averoa@latest my-app` (or `npx create-averoa my-app`) creates a new AveroaJS application from the
   [averoajs](https://github.com/budiherma1/averoajs) boilerplate.
 - Downloads the latest `v*` tag of averoajs from GitHub (`--ref` picks another tag, branch or commit; when the GitHub
-  API cannot be reached the bundled default `v2.1.0` is used, with a warning). `--template` or
+  API cannot be reached the bundled default `v2.2.1` is used, with a warning). `--template` or
   `CREATE_AVEROA_TEMPLATE` use a local directory, a `.tar.gz` file or a tarball URL instead.
 - Prepares the project: `package.json` gets the project name (validated against the npm naming rules), version
   `0.1.0` and `"private": true`; repository-only files (`scripts/link-local.mjs` and the `link:local` script,

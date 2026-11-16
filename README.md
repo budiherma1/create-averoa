@@ -40,7 +40,7 @@ Open <http://localhost:8888>, or call the API:
 
 ```bash
 curl http://localhost:8888/api
-# {"name":"Averoa","version":"2.1.0"}
+# {"name":"Averoa","version":"2.2.1"}
 ```
 
 The default preset uses SQLite, so no database server is needed. The seeders create the demo user
@@ -90,7 +90,7 @@ without a terminal.
 | `[project-directory]` | `averoa-app` | Where to create the application, relative to the current directory. `.` is the current directory. |
 | `--db <sqlite\|mysql\|postgres>` | `sqlite` | Database preset written to `.env` (see [Database presets](#database-presets)). `better-sqlite3`, `mysql2`, `mariadb`, `pg` and `postgresql` are accepted as aliases. |
 | `--name <package-name>` | directory name | `name` in `package.json`, validated against the npm naming rules. Scoped names (`@acme/api`) are allowed. |
-| `--ref <tag\|branch\|sha>` | latest `v*` tag | The averoajs version to download, for example `v2.1.0`, `master` or a commit SHA. |
+| `--ref <tag\|branch\|sha>` | latest `v*` tag | The averoajs version to download, for example `v2.2.1`, `master` or a commit SHA. |
 | `--template <dir\|file\|url>` | | Use a local directory, a `.tar.gz` / `.tgz` file or a tarball URL instead of GitHub. Cannot be combined with `--ref`. |
 | `--install`, `--no-install` | `--install` | Install dependencies after scaffolding. |
 | `--pm <npm\|pnpm\|yarn\|bun>` | the one running the command | Package manager used for the install and in the printed commands. Detected from `npm_config_user_agent`, falling back to npm. |
@@ -167,7 +167,7 @@ npx create-averoa my-app --ref v2.0.0      # an older release
 npx create-averoa my-app --ref master      # the development branch
 ```
 
-If the GitHub API cannot be reached (offline, rate limited), create-averoa warns and downloads `v2.1.0`, the latest
+If the GitHub API cannot be reached (offline, rate limited), create-averoa warns and downloads `v2.2.1`, the latest
 version it was released with. Set `GITHUB_TOKEN` to raise the API rate limit.
 
 To work without GitHub, point `--template` (or `CREATE_AVEROA_TEMPLATE`) at a copy of the boilerplate:
@@ -176,8 +176,8 @@ To work without GitHub, point `--template` (or `CREATE_AVEROA_TEMPLATE`) at a co
 # a local checkout; in a git work tree only the files git would commit are copied
 npx create-averoa my-app --template ../averoajs
 
-# an archive you downloaded before, e.g. from https://github.com/budiherma1/averoajs/archive/refs/tags/v2.1.0.tar.gz
-npx create-averoa my-app --template ./averoajs-2.1.0.tar.gz
+# an archive you downloaded before, e.g. from https://github.com/budiherma1/averoajs/archive/refs/tags/v2.2.1.tar.gz
+npx create-averoa my-app --template ./averoajs-2.2.1.tar.gz
 
 # a tarball URL (https; plain http only for localhost)
 npx create-averoa my-app --template https://example.com/averoajs.tar.gz
@@ -200,7 +200,7 @@ root `.env`. An archive may contain the project at its root or inside one top-le
 **My options were ignored with `npm create`.** npm reads options that come before `--` itself. Use
 `npm create averoa@latest my-app -- --db mysql`.
 
-**`could not reach the GitHub API` / `rate limited`.** create-averoa falls back to `v2.1.0` and says so. Pass
+**`could not reach the GitHub API` / `rate limited`.** create-averoa falls back to `v2.2.1` and says so. Pass
 `--ref <tag>` to choose the version yourself, or set `GITHUB_TOKEN`.
 
 **`could not download https://codeload.github.com/...`.** The machine cannot reach GitHub. Behind a proxy, note that
@@ -208,7 +208,7 @@ the `fetch` built into Node.js ignores `HTTPS_PROXY` before Node.js 24 (on 24, s
 download the archive another way and pass it with `--template`.
 
 **`... was not found (404). Check the --ref or --template value.`** The tag, branch or commit does not exist. Tags
-start with `v`: `--ref v2.1.0`.
+start with `v`: `--ref v2.2.1`.
 
 **`the "tar" command was not found`.** The archive is extracted with the system `tar`, which macOS, Linux distributions
 and Windows 10 (1803) and later ship. On Windows the built-in `%SystemRoot%\System32\tar.exe` is used even when a
